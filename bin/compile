@@ -60,17 +60,49 @@ fi
 
 echo "-----> Writing policy file"
 mkdir -p $INSTALL_DIR/etc/ImageMagick
-cat > $INSTALL_DIR/policy.xml <<EOF
+cat > $INSTALL_DIR/etc/ImageMagick/policy.xml <<EOF
 <policymap>
+  <!-- This is a more complete policy file with settings that should allow MiniMagick to work properly -->
+  <policy domain="resource" name="memory" value="256MiB"/>
+  <policy domain="resource" name="map" value="512MiB"/>
+  <policy domain="resource" name="width" value="16KP"/>
+  <policy domain="resource" name="height" value="16KP"/>
+  <policy domain="resource" name="area" value="128MB"/>
+  <policy domain="resource" name="disk" value="1GiB"/>
+  <policy domain="resource" name="file" value="768"/>
+  <policy domain="resource" name="thread" value="4"/>
+  <policy domain="resource" name="throttle" value="0"/>
+  <policy domain="resource" name="time" value="120"/>
+  
+  <!-- Disable potentially dangerous coders -->
   <policy domain="coder" rights="none" pattern="EPHEMERAL" />
+  <policy domain="coder" rights="none" pattern="URL" />
   <policy domain="coder" rights="none" pattern="HTTPS" />
   <policy domain="coder" rights="none" pattern="MVG" />
   <policy domain="coder" rights="none" pattern="MSL" />
+  <policy domain="coder" rights="none" pattern="TEXT" />
+  <policy domain="coder" rights="none" pattern="SHOW" />
+  <policy domain="coder" rights="none" pattern="WIN" />
+  <policy domain="coder" rights="none" pattern="PLT" />
+  
+  <!-- Enable necessary coders -->
+  <policy domain="coder" rights="read|write" pattern="PNG" />
+  <policy domain="coder" rights="read|write" pattern="JPEG" />
+  <policy domain="coder" rights="read|write" pattern="GIF" />
+  <policy domain="coder" rights="read|write" pattern="BMP" />
+  <policy domain="coder" rights="read|write" pattern="WEBP" />
+  <policy domain="coder" rights="read|write" pattern="TIFF" />
+  
+  <!-- Disable specific modules with security issues -->
+  <policy domain="module" rights="none" pattern="{PS,PDF,XPS}" />
+  
+  <!-- Don't allow command execution from delegates -->
+  <policy domain="delegate" rights="none" pattern="*" />
 </policymap>
 EOF
 
 echo "-----> Writing config file"
-cat > $INSTALL_DIR/magic.xml <<EOF
+cat > $INSTALL_DIR/etc/ImageMagick/magic.xml <<EOF
 <magicmap>
  <magic name="JPEG" offset="0" target="\377\330\377"/> 
  <magic name="PNG" offset="0" target="\211PNG\r\n\032\n"/> 
@@ -84,5 +116,5 @@ RUNTIME_INSTALL_PATH="\$HOME/vendor/imagemagick"
 mkdir -p $(dirname $PROFILE_PATH)
 echo "export PATH=$RUNTIME_INSTALL_PATH/bin:\$PATH" >> $PROFILE_PATH
 echo "export LD_LIBRARY_PATH=$RUNTIME_INSTALL_PATH/lib:\$LD_LIBRARY_PATH:/usr/local/lib" >> $PROFILE_PATH
-echo "export MAGICK_CONFIGURE_PATH=$RUNTIME_INSTALL_PATH" >> $PROFILE_PATH
-echo "-----> Done updating environment variables. All set for ImageMagick."
+echo "export MAGICK_CONFIGURE_PATH=$RUNTIME_INSTALL_PATH/etc/ImageMagick" >> $PROFILE_PATH
+echo "-----> Done updating environment variables. All set for ImageMagick." 
